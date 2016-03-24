@@ -50,47 +50,27 @@ function getMessage(a, b) {
         if (i === j) {
           while (i--) {
             // arraySum += a[i] * b[i]; /* Версия обычного человека */
-
-            /* Версия параноика */
-            if ((typeof(a[i]) === "number") && (typeof(b[i]) === "number")) {
-              arraySum += a[i] * b[i];
-            } else if (typeof(a[i]) === "number") {
-              arraySum += a[i];
-            } else if (typeof(b[i]) === "number") {
-              arraySum += b[i];
-            }
+            arraySum += checkNumberAndMultiply(a[i], b[i]); /* Версия параноика */
           }
           return valueIsDoubleArray.replace(valueIsDoubleArrayReplace, arraySum);
 
         } else if (i > j) {
           while (i-- > j){
-            if (typeof(a[i]) !== "number") continue;
+            if (!checkNumber(a[i])) continue;
             arraySum += a[i];
           }
           while (j--) {
-            if ((typeof(a[j]) === "number") && (typeof(b[j]) === "number")) {
-              arraySum += a[j] * b[j];
-            } else if (typeof(a[j]) === "number") {
-              arraySum += a[j];
-            } else if (typeof(b[j]) === "number") {
-              arraySum += b[j];
-            }
+            arraySum += checkNumberAndMultiply(a[j], b[j]);
           }
           return valueIsDoubleArray.replace(valueIsDoubleArrayReplace, arraySum);
 
         } else if (i < j) {
           while (j-- > i){
-            if (typeof(b[j]) !== "number") continue;
+            if (!checkNumber(b[j])) continue;
             arraySum += b[j];
           }
           while (i--) {
-            if ((typeof(a[i]) === "number") && (typeof(b[i]) === "number")) {
-              arraySum += a[i] * b[i];
-            } else if (typeof(a[i]) === "number") {
-              arraySum += a[i];
-            } else if (typeof(b[i]) === "number") {
-              arraySum += b[i];
-            }
+            arraySum += checkNumberAndMultiply(a[i], b[i]);
           }
           return valueIsDoubleArray.replace(valueIsDoubleArrayReplace, arraySum);
         }
@@ -100,4 +80,23 @@ function getMessage(a, b) {
     default:
       return valueUndefinedOrWrong;
   }
+}
+
+function checkNumberAndMultiply(firstValue, secondValue){
+  var firstIsNumber = checkNumber(firstValue);
+  var secondIsNumber = checkNumber(secondValue);
+
+  if (firstIsNumber && secondIsNumber) {
+    return firstValue * secondValue;
+  } else if (firstIsNumber) {
+    return firstValue;
+  } else if (secondIsNumber) {
+    return secondValue;
+  } else {
+    return 0;
+  }
+}
+
+function checkNumber(varToCheck) {
+  return typeof(varToCheck) === "number";
 }
