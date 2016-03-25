@@ -1,7 +1,7 @@
 # Личный проект «Код и Магия» [![Build status][travis-image]][travis-url] [![Dependency status][dependency-image]][dependency-url]
 
 * Студент: [Алексей Трубицын](https://up.htmlacademy.ru/javascript/4/user/159646).
-* Наставник: `Неизвестно`.
+* Наставник: Кирилл Брусенский.
 
 ---
 
