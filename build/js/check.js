@@ -26,7 +26,7 @@ function getMessage(a, b) {
       break;
 
     case "number":
-      return valueIsNumber.replace(valueIsNumberReplace, a*100);
+      return valueIsNumber.replace(valueIsNumberReplace, a * 100);
       break;
 
     case "object":
@@ -34,46 +34,20 @@ function getMessage(a, b) {
       var bIsArray = Array.isArray(b);
 
       if (aIsArray && !bIsArray) {
-        var i = a.length;
         var arraySum = 0;
-        while (i--) {
-          if (typeof(a[i]) !== "number") continue;
-          arraySum += a[i];
+        for (var i = a.length - 1; i >= 0; i--) {
+          if (!isNaN(a[i])){
+            arraySum += a[i];
+          }
         }
         return valueIsArray.replace(valueIsArrayReplace, arraySum);
 
       } else if (aIsArray && bIsArray) {
-        var i = a.length;
-        var j = b.length;
         var arraySum = 0;
-
-        if (i === j) {
-          while (i--) {
-            // arraySum += a[i] * b[i]; /* Версия обычного человека */
-            arraySum += checkNumberAndMultiply(a[i], b[i]); /* Версия параноика */
-          }
-          return valueIsDoubleArray.replace(valueIsDoubleArrayReplace, arraySum);
-
-        } else if (i > j) {
-          while (i-- > j){
-            if (!checkNumber(a[i])) continue;
-            arraySum += a[i];
-          }
-          while (j--) {
-            arraySum += checkNumberAndMultiply(a[j], b[j]);
-          }
-          return valueIsDoubleArray.replace(valueIsDoubleArrayReplace, arraySum);
-
-        } else if (i < j) {
-          while (j-- > i){
-            if (!checkNumber(b[j])) continue;
-            arraySum += b[j];
-          }
-          while (i--) {
-            arraySum += checkNumberAndMultiply(a[i], b[i]);
-          }
-          return valueIsDoubleArray.replace(valueIsDoubleArrayReplace, arraySum);
+        for (var i = Math.min(a.length, b.length) - 1; i >= 0; i--) { /* Если в одном из массивов не число, то не учитываем этот индекс */
+          arraySum += checkNumberAndMultiply(a[i], b[i]);
         }
+        return valueIsDoubleArray.replace(valueIsDoubleArrayReplace, arraySum);
       }
       break;
 
@@ -83,20 +57,9 @@ function getMessage(a, b) {
 }
 
 function checkNumberAndMultiply(firstValue, secondValue){
-  var firstIsNumber = checkNumber(firstValue);
-  var secondIsNumber = checkNumber(secondValue);
-
-  if (firstIsNumber && secondIsNumber) {
-    return firstValue * secondValue;
-  } else if (firstIsNumber) {
-    return firstValue;
-  } else if (secondIsNumber) {
-    return secondValue;
+  if (isNaN(firstValue) || isNaN(secondValue)) {
+    return 0; /* Если в одном из массивов не число, то не учитываем этот индекс */
   } else {
-    return 0;
+    return firstValue * secondValue;
   }
-}
-
-function checkNumber(varToCheck) {
-  return typeof(varToCheck) === "number";
 }
