@@ -407,6 +407,10 @@
 
       var thisCtx = this.ctx;
 
+      var textFont = '26px Tahoma';
+      var textBaseLine = 'hanging';
+      var textPosition = [30, 15];
+
       var wizardObject = this.state.objects[0];
       var dialogPosX = 0;
       var dialogPosY = 0;
@@ -430,6 +434,7 @@
       /* Проверим, не выходит ли диалог за пределы канваса. Если выходит по ширине - отрисуем его слева */
       dialogPosX = (dialogPosX + dialogWidth > WIDTH) ? dialogPosX - wizardWidth - dialogWidth - dialogMarginX : dialogPosX;
       dialogPosY = (dialogPosY >= 0) ? dialogPosY : 0;
+      textPosition = [textPosition[0] + dialogPosX, textPosition[1] + dialogPosY];
 
       var dialogPosition = [dialogPosX, dialogPosY];
       var dialogFirstPoint = [dialogPosition[0] + 16, dialogPosition[1]];
@@ -446,6 +451,12 @@
 
       drawFigure('rgba(0, 0, 0, 0.7)', 5);
       drawFigure('#fff', 0);
+
+      var ctxText = thisCtx;
+      ctxText.font = textFont;
+      ctxText.textBaseline = textBaseLine;
+      ctxText.fillStyle = '#000';
+      ctxText.fillText(dialogText, textPosition[0], textPosition[1]);
 
       function drawFigure(fillColor, shift) {
         var ctxShape = thisCtx;
