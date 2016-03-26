@@ -381,16 +381,86 @@
       switch (this.state.currentStatus) {
         case Verdict.WIN:
           console.log('you have won!');
+          this._drawWizardDialog('you have won!');
           break;
         case Verdict.FAIL:
           console.log('you have failed!');
+          this._drawWizardDialog('you have failed!');
           break;
         case Verdict.PAUSE:
           console.log('game is on pause!');
+          this._drawWizardDialog('game is on pause!');
           break;
         case Verdict.INTRO:
           console.log('welcome to the game! Press Space to start');
+          this._drawWizardDialog('welcome to the game! Press Space to start');
           break;
+      }
+    },
+
+    /**
+     * Отрисовка окна диалога с тенью
+     * @param {string} dialogText Строка с текстом диалога
+    */
+
+    _drawWizardDialog: function(dialogText) {
+
+      var thisCtx = this.ctx;
+
+      var wizardObject = this.state.objects[0];
+      var dialogPosX = 0;
+      var dialogPosY = 0;
+      var wizardWidth = 0;
+
+      var dialogMarginX = 7;
+      var dialogMarginY = 102;
+
+      var dialogWidth = 298;
+      var dialogTopLine = [282, 0];
+      var dialogRightLine = [282, 122];
+      var dialogBottomLine = [0, 136];
+      var dialogLeftLine = [16, 0];
+
+      if (wizardObject !== 'undefined') {
+        wizardWidth = (wizardObject.width !== 'undefined') ? wizardObject.width : 0;
+        dialogPosY = (wizardObject.y === 'undefined') ? 0 : wizardObject.y - dialogMarginY;
+        dialogPosX = wizardWidth + ((wizardObject.x === 'undefined') ? 0 : wizardObject.x + dialogMarginX);
+      }
+
+      /* Проверим, не выходит ли диалог за пределы канваса. Если выходит по ширине - отрисуем его слева */
+      dialogPosX = (dialogPosX + dialogWidth > WIDTH) ? dialogPosX - wizardWidth - dialogWidth - dialogMarginX : dialogPosX;
+      dialogPosY = (dialogPosY >= 0) ? dialogPosY : 0;
+
+      var dialogPosition = [dialogPosX, dialogPosY];
+      var dialogFirstPoint = [dialogPosition[0] + 16, dialogPosition[1]];
+      var dialogPointsAbsolute = [dialogTopLine, dialogRightLine, dialogBottomLine, dialogLeftLine];
+
+      var dialogPoints = [];
+      var i = 0;
+      for (var absolutePoint in dialogPointsAbsolute) {
+        if (!isNaN(dialogPointsAbsolute[absolutePoint][0]) && !isNaN(dialogPointsAbsolute[absolutePoint][1])) {
+          dialogPoints[i] = [dialogPointsAbsolute[absolutePoint][0] + dialogPosition[0], dialogPointsAbsolute[absolutePoint][1] + dialogPosition[1]];
+          i++;
+        }
+      }
+
+      drawFigure('rgba(0, 0, 0, 0.7)', 5);
+      drawFigure('#fff', 0);
+
+      function drawFigure(fillColor, shift) {
+        var ctxShape = thisCtx;
+        ctxShape.fillStyle = fillColor;
+        ctxShape.beginPath();
+        ctxShape.moveTo(dialogFirstPoint[0] + shift, dialogFirstPoint[1] + shift);
+
+        for (var point in dialogPoints) {
+          if (!isNaN(dialogPoints[point][0]) && !isNaN(dialogPoints[point][1])) {
+            ctxShape.lineTo(dialogPoints[point][0] + shift, dialogPoints[point][1] + shift);
+          }
+        }
+
+        ctxShape.closePath();
+        ctxShape.fill();
       }
     },
 
