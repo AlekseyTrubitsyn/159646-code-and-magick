@@ -381,19 +381,19 @@
       switch (this.state.currentStatus) {
         case Verdict.WIN:
           console.log('you have won!');
-          this._drawWizardDialog('you have won!');
+          this._drawWizardDialog('Фантастика! Точный выстрел!');
           break;
         case Verdict.FAIL:
           console.log('you have failed!');
-          this._drawWizardDialog('you have failed!');
+          this._drawWizardDialog('Мимо. Сосредоточьтесь!');
           break;
         case Verdict.PAUSE:
           console.log('game is on pause!');
-          this._drawWizardDialog('game is on pause!');
+          this._drawWizardDialog('Пауза!');
           break;
         case Verdict.INTRO:
           console.log('welcome to the game! Press Space to start');
-          this._drawWizardDialog('welcome to the game! Press Space to start');
+          this._drawWizardDialog('Добро пожаловать в игру!   Управляйте волшебником с помощью стрелок на клавиатуре, стрелять файерболом - shift. Удачи! Пробел для продолжения.');
           break;
       }
     },
@@ -407,7 +407,7 @@
 
       var thisCtx = this.ctx;
 
-      var textFont = '26px Tahoma';
+      var textFont = '16px \'Pt Sans\'';
       var textBaseLine = 'hanging';
       var textPosition = [30, 15];
 
@@ -420,13 +420,19 @@
       var dialogMarginY = 102;
 
       var dialogWidth = 298;
-      var dialogTopLine = [282, 0];
-      var dialogRightLine = [282, 122];
-      var dialogBottomLine = [0, 136];
-      var dialogLeftLine = [16, 0];
+
+      var dialogPoint1 = [282, 0];
+      var dialogPoint2 = [282, 122];
+      var dialogPoint3 = [0, 136];
+      var dialogPoint4 = [16, 0];
+      var dialogPointsAbsolute = [dialogPoint1, dialogPoint2, dialogPoint3, dialogPoint4];
+
+      var dialogPosition = [0, 0];
+      var dialogFirstPoint = [16, 0];
+      var dialogPoints = [];
 
       if (wizardObject !== 'undefined') {
-        wizardWidth = (wizardObject.width !== 'undefined') ? wizardObject.width : 0;
+        wizardWidth = (wizardObject.width === 'undefined') ? 0 : wizardObject.width;
         dialogPosY = (wizardObject.y === 'undefined') ? 0 : wizardObject.y - dialogMarginY;
         dialogPosX = wizardWidth + ((wizardObject.x === 'undefined') ? 0 : wizardObject.x + dialogMarginX);
       }
@@ -434,29 +440,18 @@
       /* Проверим, не выходит ли диалог за пределы канваса. Если выходит по ширине - отрисуем его слева */
       dialogPosX = (dialogPosX + dialogWidth > WIDTH) ? dialogPosX - wizardWidth - dialogWidth - dialogMarginX : dialogPosX;
       dialogPosY = (dialogPosY >= 0) ? dialogPosY : 0;
+      dialogPosition = [dialogPosX, dialogPosY];
+      dialogFirstPoint = [dialogPosition[0] + dialogFirstPoint[0], dialogPosition[1] + dialogFirstPoint[1]];
       textPosition = [textPosition[0] + dialogPosX, textPosition[1] + dialogPosY];
 
-      var dialogPosition = [dialogPosX, dialogPosY];
-      var dialogFirstPoint = [dialogPosition[0] + 16, dialogPosition[1]];
-      var dialogPointsAbsolute = [dialogTopLine, dialogRightLine, dialogBottomLine, dialogLeftLine];
-
-      var dialogPoints = [];
-      var i = 0;
-      for (var absolutePoint in dialogPointsAbsolute) {
-        if (!isNaN(dialogPointsAbsolute[absolutePoint][0]) && !isNaN(dialogPointsAbsolute[absolutePoint][1])) {
-          dialogPoints[i] = [dialogPointsAbsolute[absolutePoint][0] + dialogPosition[0], dialogPointsAbsolute[absolutePoint][1] + dialogPosition[1]];
-          i++;
-        }
+      /* Вычислим координаты точек для окна диалога с учетом положеня волшебника */
+      for (var i = 0; i < dialogPointsAbsolute.length; i++) {
+        dialogPoints[i] = [dialogPointsAbsolute[i][0] + dialogPosition[0], dialogPointsAbsolute[i][1] + dialogPosition[1]];
       }
 
       drawFigure('rgba(0, 0, 0, 0.7)', 5);
       drawFigure('#fff', 0);
-
-      var ctxText = thisCtx;
-      ctxText.font = textFont;
-      ctxText.textBaseline = textBaseLine;
-      ctxText.fillStyle = '#000';
-      ctxText.fillText(dialogText, textPosition[0], textPosition[1]);
+      drawText();
 
       function drawFigure(fillColor, shift) {
         var ctxShape = thisCtx;
@@ -472,6 +467,51 @@
 
         ctxShape.closePath();
         ctxShape.fill();
+      }
+
+      function drawText() {
+        var ctxText = thisCtx;
+        var modifiedDialogText = [];
+        var textCanvasWidth = 242;
+        var textLineHeight = 20;
+        var linePositionY = textPosition[1];
+
+        ctxText.font = textFont;
+        ctxText.textBaseline = textBaseLine;
+        ctxText.fillStyle = '#000';
+        modifiedDialogText = splitText(ctxText, textCanvasWidth, dialogText);
+
+        for (var m = 0; m < modifiedDialogText.length; m++) {
+          ctxText.fillText(modifiedDialogText[m], textPosition[0], linePositionY);
+          linePositionY += textLineHeight;
+        }
+      }
+
+      function splitText(context, canvasWidth, text) {
+        var words = text.split(' ');
+        var wordsCount = words.length;
+        var resultText = '';
+        var resultTextLinesArray = [''];
+        var k = 0;
+
+        for (var j = 0; j < wordsCount; j++) {
+
+          var newWord = words[j];
+          resultText += newWord;
+
+          var newLineWidth = context.measureText(resultText).width;
+
+          if (newLineWidth > canvasWidth) {
+            k++;
+            resultTextLinesArray[k] = words[j] + ' ';
+            resultText = words[j];
+
+          } else {
+            resultTextLinesArray[k] += words[j] + ' ';
+            resultText += ' ';
+          }
+        }
+        return resultTextLinesArray;
       }
     },
 
