@@ -410,6 +410,11 @@
       var textFont = '16px \'Pt Sans\'';
       var textBaseLine = 'hanging';
       var textPosition = [30, 15];
+      var textFillStyle = '#000';
+
+      var canvasShadowStyle = 'rgba(0, 0, 0, 0.7)';
+      var canvasShadowShift = 5;
+      var canvasDialogStyle = '#fff';
 
       var wizardObject = this.state.objects[0];
       var dialogPosX = 0;
@@ -431,6 +436,9 @@
       var dialogFirstPoint = [16, 0];
       var dialogPoints = [];
 
+      var textCanvasWidth = 242;
+      var textLineHeight = 20;
+
       if (wizardObject !== 'undefined') {
         wizardWidth = (wizardObject.width === 'undefined') ? 0 : wizardObject.width;
         dialogPosY = (wizardObject.y === 'undefined') ? 0 : wizardObject.y - dialogMarginY;
@@ -449,8 +457,8 @@
         dialogPoints[i] = [dialogPointsAbsolute[i][0] + dialogPosition[0], dialogPointsAbsolute[i][1] + dialogPosition[1]];
       }
 
-      drawFigure('rgba(0, 0, 0, 0.7)', 5);
-      drawFigure('#fff', 0);
+      drawFigure(canvasShadowStyle, canvasShadowShift);
+      drawFigure(canvasDialogStyle, 0);
       drawText();
 
       function drawFigure(fillColor, shift) {
@@ -472,13 +480,11 @@
       function drawText() {
         var ctxText = thisCtx;
         var modifiedDialogText = [];
-        var textCanvasWidth = 242;
-        var textLineHeight = 20;
         var linePositionY = textPosition[1];
 
         ctxText.font = textFont;
         ctxText.textBaseline = textBaseLine;
-        ctxText.fillStyle = '#000';
+        ctxText.fillStyle = textFillStyle;
         modifiedDialogText = splitText(ctxText, textCanvasWidth, dialogText);
 
         for (var m = 0; m < modifiedDialogText.length; m++) {
