@@ -455,8 +455,8 @@
         dialogPosY = wizardObject.y - dialogMarginY;
 
       } else {
-        dialogPosX = WIDTH / 2 - dialogWidth;
-        dialogPosY = HEIGHT / 2 - (dialogHeight + displaceAndMarginY);
+        dialogPosX = WIDTH / 2 - dialogWidth / 2;
+        dialogPosY = HEIGHT / 2 - (dialogHeight + displaceAndMarginY) / 2;
       }
 
       /*
