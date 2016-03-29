@@ -409,7 +409,7 @@
 
       var textFont = '16px \'Pt Sans\'';
       var textBaseLine = 'hanging';
-      var textPosition = [30, 15];
+      var textLineHeight = 20;
       var textFillStyle = '#000';
 
       var canvasShadowStyle = 'rgba(0, 0, 0, 0.7)';
@@ -423,39 +423,112 @@
 
       var dialogMarginX = 7;
       var dialogMarginY = 102;
+      var dialogOnTheRight = true;
 
-      var dialogWidth = 298;
+      /*
+      *   Считаем, что фигура представляет собой квадрат, размеры которого
+      *   определяются размерами текста внутри плюс паддинги, а 3 или 4 точка
+      *   (в зависимости от расположения dialogOnTheRight) удалена на некоторое
+      *   расстояние.
+      */
+      var dialogWidth = 266;
+      var dialogHeight = 122;
+      var dialogPaddingX = 20;
+      var dialogPaddingY = 15;
+      var displaceDelta = [16, 14];
+      var displaceAndMarginY = displaceDelta[1] + dialogMarginY;
 
-      var dialogPoint1 = [282, 0];
-      var dialogPoint2 = [282, 122];
-      var dialogPoint3 = [0, 136];
-      var dialogPoint4 = [16, 0];
-      var dialogPointsAbsolute = [dialogPoint1, dialogPoint2, dialogPoint3, dialogPoint4];
+      var dialogPoint1;
+      var dialogPoint2;
+      var dialogPoint3;
+      var dialogPoint4;
+      var dialogPoint5;
 
-      var dialogPosition = [0, 0];
-      var dialogFirstPoint = [16, 0];
-      var dialogPoints = [];
-
-      var textCanvasWidth = 242;
-      var textLineHeight = 20;
-
+      /*
+      * Вычислим расположение первой точки фигуры с учетом
+      * расположения Волшебника и заданных выше отступов.
+      * Считаем, что поля y, x и width у объекта существуют.
+      */
       if (wizardObject !== 'undefined') {
-        wizardWidth = (wizardObject.width === 'undefined') ? 0 : wizardObject.width;
-        dialogPosY = (wizardObject.y === 'undefined') ? 0 : wizardObject.y - dialogMarginY;
-        dialogPosX = wizardWidth + ((wizardObject.x === 'undefined') ? 0 : wizardObject.x + dialogMarginX);
+        wizardWidth = wizardObject.width;
+        dialogPosX = wizardWidth + wizardObject.x + dialogMarginX;
+        dialogPosY = wizardObject.y - dialogMarginY;
+
+      } else {
+        dialogPosX = WIDTH / 2 - dialogWidth;
+        dialogPosY = HEIGHT / 2 - (dialogHeight + displaceAndMarginY);
       }
 
-      /* Проверим, не выходит ли диалог за пределы канваса. Если выходит по ширине - отрисуем его слева */
-      dialogPosX = (dialogPosX + dialogWidth > WIDTH) ? dialogPosX - wizardWidth - dialogWidth - dialogMarginX : dialogPosX;
+      /*
+      * Проверим, не выходит ли диалог за пределы канваса.
+      * Если выходит по ширине - отрисуем его слева
+      */
+      if (dialogPosX + dialogWidth > WIDTH) {
+        dialogPosX = dialogPosX - wizardWidth - dialogWidth - dialogMarginX;
+        dialogOnTheRight = false;
+      }
+
       dialogPosY = (dialogPosY >= 0) ? dialogPosY : 0;
-      dialogPosition = [dialogPosX, dialogPosY];
-      dialogFirstPoint = [dialogPosition[0] + dialogFirstPoint[0], dialogPosition[1] + dialogFirstPoint[1]];
-      textPosition = [textPosition[0] + dialogPosX, textPosition[1] + dialogPosY];
 
-      /* Вычислим координаты точек для окна диалога с учетом положеня волшебника */
-      for (var i = 0; i < dialogPointsAbsolute.length; i++) {
-        dialogPoints[i] = [dialogPointsAbsolute[i][0] + dialogPosition[0], dialogPointsAbsolute[i][1] + dialogPosition[1]];
+      /*
+      *  Зададим первоначальные координаты точек без учета высоты текста.
+      */
+      if (dialogOnTheRight) {
+        dialogPoint1 = [dialogPosX + displaceDelta[0], dialogPosY];
+        dialogPoint2 = [dialogPoint1[0] + dialogWidth, dialogPoint1[1]];
+        dialogPoint3 = [dialogPoint2[0], dialogPoint2[1] + dialogHeight];
+        dialogPoint4 = [dialogPosX, dialogPoint3[1] + displaceDelta[1]];
+
+      } else {
+        dialogPoint1 = [dialogPosX - displaceDelta[0] - canvasShadowShift - 2 * dialogMarginX, dialogPosY];
+        dialogPoint2 = [dialogPoint1[0] + dialogWidth, dialogPoint1[1]];
+        dialogPoint3 = [dialogPoint2[0] + displaceDelta[0], dialogPoint2[1] + dialogHeight + displaceDelta[1]];
+        dialogPoint4 = [dialogPoint1[0], dialogPoint3[1] - displaceDelta[1]];
       }
+      dialogPoint5 = dialogPoint1;
+
+      /*
+      * Получим необходимую высоту фигуры с
+      * учетом количества строк текста.
+      */
+      var ctxTemp = thisCtx;
+      ctxTemp.font = textFont;
+      var modifiedDialogText = splitText(ctxTemp, dialogWidth - dialogPaddingX * 2, dialogText);
+      var newDialogHeight = modifiedDialogText.length * textLineHeight + dialogPaddingY;
+
+      /*
+      *  Изменим положение точек на вертикальной оси с учетом размеров текста и положения нашей фигуры.
+      *  Поднимаем верхнюю грань (1,2 и 5 точки) до максимальной высоты,
+      *  если не хватает места - двигаем 3 и 4 точки вниз.
+      */
+
+      var minBottomSpace = displaceDelta[1] + canvasShadowShift + dialogPaddingY;
+
+      if (newDialogHeight > dialogHeight) {
+        var maxDialogHeight = HEIGHT - minBottomSpace;
+
+        newDialogHeight = (newDialogHeight > maxDialogHeight) ? maxDialogHeight : newDialogHeight;
+
+        var heightDelta = newDialogHeight - dialogHeight;
+        var overflowDelta = dialogPosY - heightDelta;
+
+        if (overflowDelta >= 0) {
+          dialogPoint1[1] -= heightDelta;
+          dialogPoint2[1] -= heightDelta;
+          dialogPoint5[1] = dialogPoint1[1];
+
+        } else {
+          if (overflowDelta < 0) {
+            dialogPoint1[1] -= dialogPosY;
+            dialogPoint2[1] -= dialogPosY;
+            dialogPoint3[1] -= overflowDelta;
+            dialogPoint4[1] -= overflowDelta;
+            dialogPoint5[1] = dialogPoint1[1];
+          }
+        }
+      }
+
+      var dialogPoints = [dialogPoint1, dialogPoint2, dialogPoint3, dialogPoint4, dialogPoint5];
 
       drawFigure(canvasShadowStyle, canvasShadowShift);
       drawFigure(canvasDialogStyle, 0);
@@ -465,12 +538,10 @@
         var ctxShape = thisCtx;
         ctxShape.fillStyle = fillColor;
         ctxShape.beginPath();
-        ctxShape.moveTo(dialogFirstPoint[0] + shift, dialogFirstPoint[1] + shift);
+        ctxShape.moveTo(dialogPoints[0][0] + shift, dialogPoints[0][1] + shift);
 
-        for (var point in dialogPoints) {
-          if (!isNaN(dialogPoints[point][0]) && !isNaN(dialogPoints[point][1])) {
-            ctxShape.lineTo(dialogPoints[point][0] + shift, dialogPoints[point][1] + shift);
-          }
+        for (var j = 1; j < dialogPoints.length; j++) {
+          ctxShape.lineTo(dialogPoints[j][0] + shift, dialogPoints[j][1] + shift);
         }
 
         ctxShape.closePath();
@@ -479,16 +550,14 @@
 
       function drawText() {
         var ctxText = thisCtx;
-        var modifiedDialogText = [];
-        var linePositionY = textPosition[1];
+        var bottomLineY = Math.min(dialogPoints[2][1], dialogPoints[3][1]) - dialogPaddingY;
 
         ctxText.font = textFont;
         ctxText.textBaseline = textBaseLine;
         ctxText.fillStyle = textFillStyle;
-        modifiedDialogText = splitText(ctxText, textCanvasWidth, dialogText);
 
-        for (var m = 0; m < modifiedDialogText.length; m++) {
-          ctxText.fillText(modifiedDialogText[m], textPosition[0], linePositionY);
+        for (var m = 0; (m < modifiedDialogText.length) && (linePositionY < bottomLineY); m++) {
+          ctxText.fillText(modifiedDialogText[m], dialogPoint1[0] + dialogPaddingX, linePositionY);
           linePositionY += textLineHeight;
         }
       }
