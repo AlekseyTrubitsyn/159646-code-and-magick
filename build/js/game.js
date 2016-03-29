@@ -409,8 +409,8 @@
 
       var textFont = '16px \'Pt Sans\'';
       var textBaseLine = 'hanging';
-      var textLineHeight = 20;
       var textFillStyle = '#000';
+      var textLineHeight = 20;
 
       var canvasShadowStyle = 'rgba(0, 0, 0, 0.7)';
       var canvasShadowShift = 5;
@@ -550,6 +550,7 @@
 
       function drawText() {
         var ctxText = thisCtx;
+        var linePositionY = dialogPoint1[1] + dialogPaddingY;
         var bottomLineY = Math.min(dialogPoints[2][1], dialogPoints[3][1]) - dialogPaddingY;
 
         ctxText.font = textFont;
