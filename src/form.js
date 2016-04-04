@@ -16,14 +16,22 @@
   var reviewFieldName = document.querySelector('.review-fields-name');
   var reviewFieldText = document.querySelector('.review-fields-text');
 
+  var browserCookies = require('browser-cookies');
+
+  var cookieUserNameKey = 'code-and-magick-userName';
+  var cookieUserTextKey = 'code-and-magick-userText';
+  var cookieUserScoreKey = 'code-and-magick-userScore';
+
   checkScoreAndFields();
 
   formOpenButton.onclick = function(evt) {
+    readReviewCookies();
     evt.preventDefault();
     formContainer.classList.remove('invisible');
   };
 
   formCloseButton.onclick = function(evt) {
+    writeReviewCookies();
     evt.preventDefault();
     formContainer.classList.add('invisible');
   };
@@ -70,5 +78,45 @@
         reviewFieldText.classList.add('invisible');
       }
     }
+  }
+
+  function readReviewCookies() {
+    var nameFromCookies = browserCookies.get(cookieUserNameKey);
+    var textFromCookies = browserCookies.get(cookieUserTextKey);
+    var scoreFromCookies = browserCookies.get(cookieUserScoreKey);
+
+    if (nameFromCookies !== null) {
+      formNameField.value = nameFromCookies;
+    }
+    if (textFromCookies !== null) {
+      formTextField.value = textFromCookies;
+    }
+    if (scoreFromCookies !== null) {
+      reviewScore = scoreFromCookies;
+      document.querySelector('#review-mark-' + reviewScore).checked = true;
+    }
+  }
+
+  function writeReviewCookies() {
+    var expiresDaysDelta = '{expires: ' + getDeltaFromBirthday() + '}';
+
+    if (formNameField.value !== '') {
+      browserCookies.set(cookieUserNameKey, formNameField.value, expiresDaysDelta);
+    }
+    if (formTextField.value !== '') {
+      browserCookies.set(cookieUserTextKey, formTextField.value, expiresDaysDelta);
+    }
+    if (reviewScore.value !== '') {
+      browserCookies.set(cookieUserScoreKey, reviewScore, expiresDaysDelta);
+    }
+  }
+
+  function getDeltaFromBirthday() {
+    var oneDayMilliseconds = 24 * 60 * 60 * 1000;
+    var currentDate = new Date();
+    var currentYear = currentDate.getFullYear();
+    var birthdayDate = (currentDate < birthdayDate) ? new Date(currentYear + '-06-04') : new Date(currentYear - 1 + '-06-04');
+
+    return Math.round((currentDate.getTime() - birthdayDate.getTime()) / oneDayMilliseconds);
   }
 })();
