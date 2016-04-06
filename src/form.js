@@ -7,7 +7,6 @@
 
   var formSubmitButton = document.querySelector('.review-submit');
   var formScoreRadio = document.querySelector('.review-form-group-mark');
-  var reviewScore;
 
   var formNameField = document.querySelector('#review-name');
   var formTextField = document.querySelector('#review-text');
@@ -16,20 +15,22 @@
   var reviewFieldName = document.querySelector('.review-fields-name');
   var reviewFieldText = document.querySelector('.review-fields-text');
 
-  checkScoreAndFields();
+  formNameField.required = true;
+
+  checkFields();
 
   formOpenButton.onclick = function(evt) {
     evt.preventDefault();
-    formContainer.classList.remove('invisible');
+    setVisibility(formContainer, true);
   };
 
   formCloseButton.onclick = function(evt) {
     evt.preventDefault();
-    formContainer.classList.add('invisible');
+    setVisibility(formContainer, false);
   };
 
   formScoreRadio.onclick = function() {
-    checkScoreAndFields();
+    checkFields();
   };
 
   formNameField.onchange = function() {
@@ -40,35 +41,28 @@
     checkFields();
   };
 
-  function checkScoreAndFields() {
-    reviewScore = document.querySelector('input[name=review-mark]:checked').value;
-    if (reviewScore < 4) {
-      formTextField.required = true;
-    } else {
-      formTextField.required = false;
-    }
-    checkFields();
+  function checkFields() {
+    var negativeScore = getReviewScore() < 4;
+    var nameFieldWrong = !formNameField.value;
+    var textFieldWrong = negativeScore && !formTextField.value;
+    var anyFieldWrong = nameFieldWrong || textFieldWrong;
+
+    formTextField.required = negativeScore;
+    formSubmitButton.disabled = anyFieldWrong;
+    setVisibility(reviewFields, anyFieldWrong);
+    setVisibility(reviewFieldName, nameFieldWrong);
+    setVisibility(reviewFieldText, textFieldWrong);
   }
 
-  function checkFields() {
-
-    var nameFieldOK = !!formNameField.value;
-    var textFieldOK = !!((reviewScore >= 4) || formTextField.value);
-    var bothFieldsOK = nameFieldOK === textFieldOK;
-
-    if (bothFieldsOK) {
-      reviewFields.classList.add('invisible');
-      formSubmitButton.disabled = false;
-
+  function setVisibility(elem, isVisible) {
+    if (isVisible) {
+      elem.classList.remove('invisible');
     } else {
-      reviewFields.classList.remove('invisible');
-      formSubmitButton.disabled = true;
-
-      if (nameFieldOK) {
-        reviewFieldName.classList.add('invisible');
-      } else if (textFieldOK) {
-        reviewFieldText.classList.add('invisible');
-      }
+      elem.classList.add('invisible');
     }
+  }
+
+  function getReviewScore() {
+    return document.querySelector('input[name=review-mark]:checked').value;
   }
 })();
