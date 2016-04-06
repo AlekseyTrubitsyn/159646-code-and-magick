@@ -4,3 +4,4 @@
 // require('./game-stat.min.js');
 require('./form.js');
 require('./game.js');
+require('./reviews.js');
