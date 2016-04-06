@@ -15,19 +15,15 @@
   var reviewFieldName = document.querySelector('.review-fields-name');
   var reviewFieldText = document.querySelector('.review-fields-text');
 
-<<<<<<< HEAD
   var browserCookies = require('browser-cookies');
 
   var cookieUserNameKey = 'code-and-magick-userName';
   var cookieUserTextKey = 'code-and-magick-userText';
   var cookieUserScoreKey = 'code-and-magick-userScore';
 
-  checkScoreAndFields();
-=======
   formNameField.required = true;
 
   checkFields();
->>>>>>> refs/remotes/origin/module3-task2
 
   formOpenButton.onclick = function(evt) {
     readReviewCookies();
@@ -74,7 +70,10 @@
     }
   }
 
-<<<<<<< HEAD
+  function getReviewScore() {
+    return document.querySelector('input[name=review-mark]:checked').value;
+  }
+
   function readReviewCookies() {
     var nameFromCookies = browserCookies.get(cookieUserNameKey);
     var textFromCookies = browserCookies.get(cookieUserTextKey);
@@ -87,23 +86,16 @@
       formTextField.value = textFromCookies;
     }
     if (scoreFromCookies !== null) {
-      reviewScore = scoreFromCookies;
-      document.querySelector('#review-mark-' + reviewScore).checked = true;
+      document.querySelector('#review-mark-' + scoreFromCookies).checked = true;
     }
   }
 
   function writeReviewCookies() {
     var expiresDaysDelta = '{expires: ' + getDeltaFromBirthday() + '}';
 
-    if (formNameField.value !== '') {
-      browserCookies.set(cookieUserNameKey, formNameField.value, expiresDaysDelta);
-    }
-    if (formTextField.value !== '') {
-      browserCookies.set(cookieUserTextKey, formTextField.value, expiresDaysDelta);
-    }
-    if (reviewScore.value !== '') {
-      browserCookies.set(cookieUserScoreKey, reviewScore, expiresDaysDelta);
-    }
+    browserCookies.set(cookieUserNameKey, formNameField.value, expiresDaysDelta);
+    browserCookies.set(cookieUserTextKey, formTextField.value, expiresDaysDelta);
+    browserCookies.set(cookieUserScoreKey, getReviewScore(), expiresDaysDelta);
   }
 
   function getDeltaFromBirthday() {
@@ -113,9 +105,5 @@
     var birthdayDate = (currentDate < birthdayDate) ? new Date(currentYear + '-06-04') : new Date(currentYear - 1 + '-06-04');
 
     return Math.round((currentDate.getTime() - birthdayDate.getTime()) / oneDayMilliseconds);
-=======
-  function getReviewScore() {
-    return document.querySelector('input[name=review-mark]:checked').value;
->>>>>>> refs/remotes/origin/module3-task2
   }
 })();
