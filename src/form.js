@@ -15,24 +15,16 @@
   var reviewFieldName = document.querySelector('.review-fields-name');
   var reviewFieldText = document.querySelector('.review-fields-text');
 
-  var browserCookies = require('browser-cookies');
-
-  var cookieUserNameKey = 'code-and-magick-userName';
-  var cookieUserTextKey = 'code-and-magick-userText';
-  var cookieUserScoreKey = 'code-and-magick-userScore';
-
   formNameField.required = true;
 
   checkFields();
 
   formOpenButton.onclick = function(evt) {
-    readReviewCookies();
     evt.preventDefault();
     setVisibility(formContainer, true);
   };
 
   formCloseButton.onclick = function(evt) {
-    writeReviewCookies();
     evt.preventDefault();
     setVisibility(formContainer, false);
   };
@@ -41,11 +33,11 @@
     checkFields();
   };
 
-  formNameField.onchange = function() {
+  formNameField.oninput = function() {
     checkFields();
   };
 
-  formTextField.onchange = function() {
+  formTextField.oninput = function() {
     checkFields();
   };
 
@@ -72,38 +64,5 @@
 
   function getReviewScore() {
     return document.querySelector('input[name=review-mark]:checked').value;
-  }
-
-  function readReviewCookies() {
-    var nameFromCookies = browserCookies.get(cookieUserNameKey);
-    var textFromCookies = browserCookies.get(cookieUserTextKey);
-    var scoreFromCookies = browserCookies.get(cookieUserScoreKey);
-
-    if (nameFromCookies !== null) {
-      formNameField.value = nameFromCookies;
-    }
-    if (textFromCookies !== null) {
-      formTextField.value = textFromCookies;
-    }
-    if (scoreFromCookies !== null) {
-      document.querySelector('#review-mark-' + scoreFromCookies).checked = true;
-    }
-  }
-
-  function writeReviewCookies() {
-    var expiresDaysDelta = '{expires: ' + getDeltaFromBirthday() + '}';
-
-    browserCookies.set(cookieUserNameKey, formNameField.value, expiresDaysDelta);
-    browserCookies.set(cookieUserTextKey, formTextField.value, expiresDaysDelta);
-    browserCookies.set(cookieUserScoreKey, getReviewScore(), expiresDaysDelta);
-  }
-
-  function getDeltaFromBirthday() {
-    var oneDayMilliseconds = 24 * 60 * 60 * 1000;
-    var currentDate = new Date();
-    var currentYear = currentDate.getFullYear();
-    var birthdayDate = (currentDate < birthdayDate) ? new Date(currentYear + '-06-04') : new Date(currentYear - 1 + '-06-04');
-
-    return Math.round((currentDate.getTime() - birthdayDate.getTime()) / oneDayMilliseconds);
   }
 })();
