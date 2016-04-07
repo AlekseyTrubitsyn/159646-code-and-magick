@@ -266,7 +266,8 @@ input[type=radio]:checked + .reviews-filter-item {
 }
 
 .review-rating {
-  display: block;
+  /*display: block;*/
+  display: inline-block; /* Привет Академии :) */
   width: 30px;
   height: 30px;
 

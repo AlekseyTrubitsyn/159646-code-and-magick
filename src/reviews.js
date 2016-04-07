@@ -17,15 +17,24 @@
 
   var getReviewElement = function(data, container) {
     var clonedReview = reviewToClone.cloneNode(true);
-    reviewToClone.querySelector('.review-text').textContent = data.description;
     container.appendChild(clonedReview);
+    clonedReview.querySelector('.review-text').textContent = data.description;
+
+    if (data.rating > 1) {
+      var ratingStar = clonedReview.querySelector('.review-rating');
+      for (var i = 2; i <= data.rating; i++) {
+        clonedReview.insertBefore(ratingStar.cloneNode(), ratingStar);
+      }
+    }
 
     var reviewAuthorImage = new Image();
     var reviewAuthorImageTimeout;
 
     reviewAuthorImage.onload = function(e) {
       clearTimeout(reviewAuthorImageTimeout);
-      clonedReview.querySelector('.review-author').src = e.target.src;
+      var reviewAuthor = clonedReview.querySelector('.review-author');
+      reviewAuthor.src = e.target.src;
+      reviewAuthor.title = e.target.title;
     };
 
     reviewAuthorImage.onerror = function() {
@@ -33,6 +42,7 @@
     };
 
     reviewAuthorImage.src = data.author.picture;
+    reviewAuthorImage.title = data.author.name;
     reviewAuthorImage.width = 124;
     reviewAuthorImage.height = 124;
 
