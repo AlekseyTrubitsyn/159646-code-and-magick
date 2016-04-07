@@ -33,11 +33,11 @@
     checkFields();
   };
 
-  formNameField.onchange = function() {
+  formNameField.oninput = function() {
     checkFields();
   };
 
-  formTextField.onchange = function() {
+  formTextField.oninput = function() {
     checkFields();
   };
 
