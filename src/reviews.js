@@ -22,10 +22,7 @@
     clonedReview.querySelector('.review-text').textContent = data.description;
 
     if (data.rating > 1) {
-      var ratingStar = clonedReview.querySelector('.review-rating');
-      for (var i = 2; i <= data.rating; i++) {
-        clonedReview.insertBefore(ratingStar.cloneNode(), ratingStar);
-      }
+      clonedReview.querySelector('.review-rating').style.width = 30 * data.rating + 'px';
     }
 
     var reviewAuthorImage = new Image();
