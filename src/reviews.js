@@ -5,6 +5,9 @@
   var reviewsContainer = document.querySelector('.reviews-list');
   var reviewsTemplate = document.querySelector('#review-template');
   var IMAGE_LOAD_TIMEOUT = 10000;
+  var RATING_STAR_IMAGE_WIDTH = 30;
+  var AUTHOR_IMAGE_WIDTH = 124;
+  var AUTHOR_IMAGE_HEIGH = 124;
   var reviewToClone;
 
   setVisibility(reviewsFilter, false);
@@ -22,7 +25,7 @@
     clonedReview.querySelector('.review-text').textContent = data.description;
 
     if (data.rating > 1) {
-      clonedReview.querySelector('.review-rating').style.width = 30 * data.rating + 'px';
+      clonedReview.querySelector('.review-rating').style.width = RATING_STAR_IMAGE_WIDTH * data.rating + 'px';
     }
 
     var reviewAuthorImage = new Image();
@@ -30,8 +33,8 @@
 
     var reviewAuthor = clonedReview.querySelector('.review-author');
     reviewAuthor.title = data.author.name;
-    reviewAuthor.width = 124;
-    reviewAuthor.height = 124;
+    reviewAuthor.width = AUTHOR_IMAGE_WIDTH;
+    reviewAuthor.height = AUTHOR_IMAGE_HEIGH;
 
     reviewAuthorImage.onload = function(e) {
       clearTimeout(reviewAuthorImageTimeout);
