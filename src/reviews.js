@@ -158,12 +158,12 @@
   /**
   * @param {boolean} enabled
   */
-  var setFiltersEnabled = function(enabled) {
-    for (var i = 0; i < reviewsFilter.length; i++) {
-      reviewsFilter[i].onclick = enabled ? function() {
-        setFilterEnabled(this.id);
-      } : null;
-    }
+  var setFiltersEnabled = function() {
+    reviewsFilter.addEventListener('click', function(evt) {
+      if (evt.target.type === 'radio') { // Внутри блока с фильтрами ловим нажатие на radio button.
+        setFilterEnabled(evt.target.id);
+      }
+    });
   };
 
   getReviews(function(loadedReviews) {
