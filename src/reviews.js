@@ -10,6 +10,7 @@
   var ACTIVE_FILTER_CLASSNAME = 'reviews-filter-active';
   var REVIEWS_LOAD_TIMEOUT = 10000;
   var reviews = [];
+  var filteredReviews = [];
 
   var Filter = {
     'ALL': 'reviews-all',
@@ -39,6 +40,7 @@
 
   showMoreReviews.onclick = function() {
     pageNumber++;
+    cloneReviews(pageNumber, false);
   };
 
   /**
@@ -119,6 +121,7 @@
    * @param {number} page
    * @param {boolean=} replaceReviews
    */
+  var cloneReviews = function(page, replaceReviews) {
     if (replaceReviews) {
       reviewsContainer.innerHTML = '';
     }
@@ -138,6 +141,8 @@
   */
   var setFilterEnabled = function(filter) {
     pageNumber = 0;
+    filteredReviews = getFilteredReviews(filter);
+    cloneReviews(pageNumber, true);
 
     var activeFilter = reviewsFilter.querySelector('.' + ACTIVE_FILTER_CLASSNAME);
     if (activeFilter) {
@@ -165,6 +170,7 @@
     reviews = loadedReviews;
     setFiltersEnabled(true);
     setFilterEnabled(DEFAULT_FILTER);
+    cloneReviews(pageNumber, true);
   });
 
   setVisibility(reviewsFilter, true);
