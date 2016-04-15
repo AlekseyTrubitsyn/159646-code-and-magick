@@ -1,9 +1,10 @@
 'use strict';
 
 (function() {
-  var reviewsFilter = document.querySelector('.reviews-filter');
-  var reviewsContainer = document.querySelector('.reviews-list');
-  var reviewsTemplate = document.querySelector('#review-template');
+
+  var filterBlock = document.querySelector('.reviews-filter');
+  var container = document.querySelector('.reviews-list');
+  var template = document.querySelector('#review-template');
 
   var REVIEWS_LOAD_URL = '//o0.github.io/assets/json/reviews.json';
   var ACTIVE_FILTER_CLASSNAME = 'reviews-filter-active';
@@ -24,15 +25,15 @@
   var AUTHOR_IMAGE_HEIGH = 124;
   var reviewToClone;
 
-  setVisibility(reviewsFilter, false);
+  setVisibility(filterBlock, false);
 
-  if ('content' in reviewsTemplate) {
-    reviewToClone = reviewsTemplate.content.querySelector('.review');
+  if ('content' in template) {
+    reviewToClone = template.content.querySelector('.review');
   } else {
-    reviewToClone = reviewsTemplate.querySelector('.review');
+    reviewToClone = template.querySelector('.review');
   }
 
-  var getReviewElement = function(data, container) {
+  var createElement = function(data) {
     var clonedReview = reviewToClone.cloneNode(true);
     container.appendChild(clonedReview);
 
@@ -56,15 +57,15 @@
     };
 
     reviewAuthorImage.onerror = function() {
-      clonedReview.classList.add('review-load-failure');
+      addLoadFailureClass(clonedReview);
     };
-
-    reviewAuthorImage.src = data.author.picture;
 
     reviewAuthorImageTimeout = setTimeout(function() {
       reviewAuthorImage.src = '';
-      clonedReview.classList.add('review-load-failure');
+      addLoadFailureClass(clonedReview);
     }, IMAGE_LOAD_TIMEOUT);
+
+    reviewAuthorImage.src = data.author.picture;
 
     return clonedReview;
   };
@@ -73,22 +74,18 @@
     var xhr = new XMLHttpRequest();
 
     xhr.onerror = function() {
-      if (reviewsContainer) {
-        reviewsContainer.classList.add('reviews-load-failure');
-      }
+      addXhrErrorClass(container);
     };
 
     xhr.timeout = REVIEWS_LOAD_TIMEOUT;
     xhr.ontimeout = xhr.onerror;
 
     xhr.onloadstart = function() {
-      if (reviewsContainer) {
-        reviewsContainer.classList.add('reviews-list-loading');
-      }
+      addXhrListLoadingClass(container);
     };
 
     xhr.onload = function(e) {
-      reviewsContainer.classList.remove('reviews-list-loading');
+      removeXhrListLoadingClass(container);
       var loadedData = JSON.parse(e.target.response);
       callback(loadedData);
     };
@@ -98,16 +95,16 @@
   };
 
   var clonedReviews = function(filteredReviews) {
-    reviewsContainer.innerHTML = '';
+    container.innerHTML = '';
     filteredReviews.forEach(function(review) {
-      getReviewElement(review, reviewsContainer);
+      createElement(review);
     });
   };
 
   var setFilterEnabled = function(filter) {
     clonedReviews(getFilteredReviews(filter));
 
-    var activeFilter = reviewsFilter.querySelector('.' + ACTIVE_FILTER_CLASSNAME);
+    var activeFilter = filterBlock.querySelector('.' + ACTIVE_FILTER_CLASSNAME);
     if (activeFilter) {
       activeFilter.classList.remove(ACTIVE_FILTER_CLASSNAME);
     }
@@ -119,8 +116,8 @@
   };
 
   var setFiltersEnabled = function(enabled) {
-    for (var i = 0; i < reviewsFilter.length; i++) {
-      reviewsFilter[i].onclick = enabled ? function() {
+    for (var i = 0; i < filterBlock.length; i++) {
+      filterBlock[i].onclick = enabled ? function() {
         setFilterEnabled(this.id);
       } : null;
     }
@@ -133,7 +130,7 @@
     clonedReviews(reviews);
   });
 
-  setVisibility(reviewsFilter, true);
+  setVisibility(filterBlock, true);
 
   var getFilteredReviews = function(filter) {
     var reviewsToFilter = reviews.slice(0);
@@ -178,6 +175,22 @@
     }
     return reviewsToFilter;
   };
+
+  function addLoadFailureClass(elem) {
+    elem.classList.add('review-load-failure');
+  }
+
+  function addXhrListLoadingClass(elem) {
+    elem.classList.add('reviews-list-loading');
+  }
+
+  function removeXhrListLoadingClass(elem) {
+    elem.classList.remove('reviews-list-loading');
+  }
+
+  function addXhrErrorClass(elem) {
+    elem.classList.add('reviews-load-failure');
+  }
 
   function setVisibility(elem, isVisible) {
     if (isVisible) {
