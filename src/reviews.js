@@ -23,6 +23,10 @@
   var RATING_STAR_IMAGE_WIDTH = 30;
   var AUTHOR_IMAGE_WIDTH = 124;
   var AUTHOR_IMAGE_HEIGH = 124;
+
+  var ONE_DAY_MILLISEC = 1000 * 60 * 60 * 24;
+  var RECENT_DATE = new Date() - ONE_DAY_MILLISEC * 14;
+
   var reviewToClone;
 
   setVisibility(filterBlock, false);
@@ -134,46 +138,38 @@
 
   var getFilteredReviews = function(filter) {
     var reviewsToFilter = reviews.slice(0);
-    var twoWeeksBefore = new Date() - 1000 * 60 * 60 * 24 * 14;
 
     switch (filter) {
 
       case Filter.RECENT:
-        reviewsToFilter = reviewsToFilter.filter(function(a) {
-          return new Date(a.date) >= twoWeeksBefore; // Про "не позже текущей даты ничего нет :)"
+        return reviewsToFilter.filter(function(a) {
+          return a.date >= RECENT_DATE;
+        }).sort(function(a, b) {
+          return b.date > a.date;
         });
-        reviewsToFilter = reviewsToFilter.sort(function(a, b) {
-          return b.date - a.date;
-        });
-        break;
 
       case Filter.GOOD:
-        reviewsToFilter = reviewsToFilter.filter(function(a) {
+        return reviewsToFilter.filter(function(a) {
           return a.rating >= 3;
+        }).sort(function(a, b) {
+          return b.rating > a.rating;
         });
-        reviewsToFilter = reviewsToFilter.sort(function(a, b) {
-          return b.rating - a.rating;
-        });
-        break;
 
       case Filter.BAD:
-        reviewsToFilter = reviewsToFilter.filter(function(a) {
+        return reviewsToFilter.filter(function(a) {
           return a.rating <= 2;
+        }).sort(function(a, b) {
+          return a.rating > b.rating;
         });
-        reviewsToFilter = reviewsToFilter.sort(function(a, b) {
-          return a.rating - b.rating;
-        });
-        break;
 
       case Filter.POPULAR:
-        reviewsToFilter = reviewsToFilter.sort(function(a, b) {
+        return reviewsToFilter.sort(function(a, b) {
           return b.review_usefulness - a.review_usefulness;
         });
-        break;
-      default:
 
+      default:
+        return reviewsToFilter;
     }
-    return reviewsToFilter;
   };
 
   function addLoadFailureClass(elem) {
