@@ -52,6 +52,7 @@
       setLoadFailureClass();
     }, IMAGE_LOAD_TIMEOUT);
 
+    reviewAuthorImage.src = data.author.picture; // На всякий случай поставил после установки таймаута
 
     return clonedReview;
   };
