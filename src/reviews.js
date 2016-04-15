@@ -106,7 +106,7 @@
   };
 
   var setFilterEnabled = function(filter) {
-    clonedReviews(getFilteredReviews(filter));
+    clonedReviews(filterReviews(filter));
 
     var activeFilter = filterBlock.querySelector('.' + ACTIVE_FILTER_CLASSNAME);
     if (activeFilter) {
@@ -136,14 +136,14 @@
 
   setVisibility(filterBlock, true);
 
-  var getFilteredReviews = function(filter) {
+  var filterReviews = function(filter) {
     var reviewsToFilter = reviews.slice(0);
 
     switch (filter) {
 
       case Filter.RECENT:
         return reviewsToFilter.filter(function(a) {
-          return a.date >= RECENT_DATE;
+          return new Date(a.date) >= RECENT_DATE;
         }).sort(function(a, b) {
           return b.date > a.date;
         });
