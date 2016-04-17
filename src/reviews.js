@@ -1,9 +1,9 @@
 'use strict';
 
 (function() {
-  var reviewsFilter = document.querySelector('.reviews-filter');
-  var reviewsContainer = document.querySelector('.reviews-list');
-  var reviewsTemplate = document.querySelector('#review-template');
+  var filterBlock = document.querySelector('.reviews-filter');
+  var container = document.querySelector('.reviews-list');
+  var template = document.querySelector('#review-template');
   var showMoreReviews = document.querySelector('.reviews-controls-more');
 
   var REVIEWS_LOAD_URL = '//o0.github.io/assets/json/reviews.json';
@@ -25,17 +25,21 @@
   var RATING_STAR_IMAGE_WIDTH = 30;
   var AUTHOR_IMAGE_WIDTH = 124;
   var AUTHOR_IMAGE_HEIGH = 124;
+
+  var ONE_DAY_MILLISEC = 1000 * 60 * 60 * 24;
+  var RECENT_DATE = new Date() - ONE_DAY_MILLISEC * 14;
+
   var reviewToClone;
 
   var PAGE_SIZE = 3;
   var pageNumber = 0;
 
-  setVisibility(reviewsFilter, false);
+  setVisibility(filterBlock, false);
 
-  if ('content' in reviewsTemplate) {
-    reviewToClone = reviewsTemplate.content.querySelector('.review');
+  if ('content' in template) {
+    reviewToClone = template.content.querySelector('.review');
   } else {
-    reviewToClone = reviewsTemplate.querySelector('.review');
+    reviewToClone = template.querySelector('.review');
   }
 
   showMoreReviews.onclick = function() {
@@ -48,7 +52,7 @@
    * @param {HTMLElement} container
    * @return {HTMLElement}
    */
-  var getReviewElement = function(data, container) {
+  var createElement = function(data) {
     var clonedReview = reviewToClone.cloneNode(true);
     container.appendChild(clonedReview);
 
@@ -72,15 +76,15 @@
     };
 
     reviewAuthorImage.onerror = function() {
-      clonedReview.classList.add('review-load-failure');
+      addLoadFailureClass(clonedReview);
     };
-
-    reviewAuthorImage.src = data.author.picture;
 
     reviewAuthorImageTimeout = setTimeout(function() {
       reviewAuthorImage.src = '';
-      clonedReview.classList.add('review-load-failure');
+      addLoadFailureClass(clonedReview);
     }, IMAGE_LOAD_TIMEOUT);
+
+    reviewAuthorImage.src = data.author.picture;
 
     return clonedReview;
   };
@@ -92,22 +96,18 @@
     var xhr = new XMLHttpRequest();
 
     xhr.onerror = function() {
-      if (reviewsContainer) {
-        reviewsContainer.classList.add('reviews-load-failure');
-      }
+      addXhrErrorClass(container);
     };
 
     xhr.timeout = REVIEWS_LOAD_TIMEOUT;
     xhr.ontimeout = xhr.onerror;
 
     xhr.onloadstart = function() {
-      if (reviewsContainer) {
-        reviewsContainer.classList.add('reviews-list-loading');
-      }
+      addXhrListLoadingClass(container);
     };
 
     xhr.onload = function(e) {
-      reviewsContainer.classList.remove('reviews-list-loading');
+      removeXhrListLoadingClass(container);
       var loadedData = JSON.parse(e.target.response);
       callback(loadedData);
     };
@@ -123,7 +123,7 @@
    */
   var cloneReviews = function(page, replaceReviews) {
     if (replaceReviews) {
-      reviewsContainer.innerHTML = '';
+      container.innerHTML = '';
     }
 
     var pageFrom = page * PAGE_SIZE;
@@ -132,7 +132,7 @@
     setVisibility(showMoreReviews, isNextPageAvailable(filteredReviews, pageNumber, PAGE_SIZE));
 
     filteredReviews.slice(pageFrom, pageTo).forEach(function(review) {
-      getReviewElement(review, reviewsContainer);
+      createElement(review);
     });
   };
 
@@ -141,10 +141,10 @@
   */
   var setFilterEnabled = function(filter) {
     pageNumber = 0;
-    filteredReviews = getFilteredReviews(filter);
+    filteredReviews = filterReviews(filter);
     cloneReviews(pageNumber, true);
 
-    var activeFilter = reviewsFilter.querySelector('.' + ACTIVE_FILTER_CLASSNAME);
+    var activeFilter = filterBlock.querySelector('.' + ACTIVE_FILTER_CLASSNAME);
     if (activeFilter) {
       activeFilter.classList.remove(ACTIVE_FILTER_CLASSNAME);
     }
@@ -159,7 +159,7 @@
   * @param {boolean} enabled
   */
   var setFiltersEnabled = function() {
-    reviewsFilter.addEventListener('click', function(evt) {
+    filterBlock.addEventListener('click', function(evt) {
       if (evt.target.type === 'radio') { // Внутри блока с фильтрами ловим нажатие на radio button.
         setFilterEnabled(evt.target.id);
       }
@@ -173,7 +173,7 @@
     cloneReviews(pageNumber, true);
   });
 
-  setVisibility(reviewsFilter, true);
+  setVisibility(filterBlock, true);
 
   /**
    * @param {Array} reviewList
@@ -188,54 +188,62 @@
   /**
    * @param {Filter} filter
    */
-  var getFilteredReviews = function(filter) {
+  var filterReviews = function(filter) {
     var reviewsToFilter = reviews.slice(0);
-    var twoWeeksBefore = new Date() - 1000 * 60 * 60 * 24 * 14;
 
     switch (filter) {
 
       case Filter.RECENT:
-        reviewsToFilter = reviewsToFilter.filter(function(a) {
-          return new Date(a.date) >= twoWeeksBefore; // Про "не позже текущей даты ничего нет :)"
+        return reviewsToFilter.filter(function(a) {
+          return new Date(a.date) >= RECENT_DATE;
+        }).sort(function(a, b) {
+          return b.date > a.date;
         });
-        reviewsToFilter = reviewsToFilter.sort(function(a, b) {
-          return b.date - a.date;
-        });
-        break;
 
       case Filter.GOOD:
-        reviewsToFilter = reviewsToFilter.filter(function(a) {
+        return reviewsToFilter.filter(function(a) {
           return a.rating >= 3;
+        }).sort(function(a, b) {
+          return b.rating > a.rating;
         });
-        reviewsToFilter = reviewsToFilter.sort(function(a, b) {
-          return b.rating - a.rating;
-        });
-        break;
 
       case Filter.BAD:
-        reviewsToFilter = reviewsToFilter.filter(function(a) {
+        return reviewsToFilter.filter(function(a) {
           return a.rating <= 2;
+        }).sort(function(a, b) {
+          return a.rating > b.rating;
         });
-        reviewsToFilter = reviewsToFilter.sort(function(a, b) {
-          return a.rating - b.rating;
-        });
-        break;
 
       case Filter.POPULAR:
-        reviewsToFilter = reviewsToFilter.sort(function(a, b) {
+        return reviewsToFilter.sort(function(a, b) {
           return b.review_usefulness - a.review_usefulness;
         });
-        break;
-      default:
 
+      default:
+        return reviewsToFilter;
     }
-    return reviewsToFilter;
   };
 
-  /**
-   * @param {HTMLElement} elem
-   * @param {boolean} isVisible
-   */
+  function addLoadFailureClass(elem) {
+    elem.classList.add('review-load-failure');
+  }
+
+  function addXhrListLoadingClass(elem) {
+    elem.classList.add('reviews-list-loading');
+  }
+
+  function removeXhrListLoadingClass(elem) {
+    elem.classList.remove('reviews-list-loading');
+  }
+
+  function addXhrErrorClass(elem) {
+    elem.classList.add('reviews-load-failure');
+  }
+
+    /**
+     * @param {HTMLElement} elem
+     * @param {boolean} isVisible
+     */
   function setVisibility(elem, isVisible) {
     if (isVisible) {
       elem.classList.remove('invisible');
