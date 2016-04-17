@@ -97,7 +97,7 @@ var browserCookies = require('browser-cookies');
     var currentYear = currentDate.getFullYear();
     var birthday = new Date(currentYear + '-06-04');
 
-    if (currentDate >= birthday) {
+    if (currentDate <= birthday) {
       birthday.setFullYear(currentYear - 1);
     }
 
