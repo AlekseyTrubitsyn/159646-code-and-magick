@@ -1,6 +1,8 @@
 'use strict';
+var browserCookies = require('browser-cookies');
 
 (function() {
+
   var formContainer = document.querySelector('.overlay-container');
   var formOpenButton = document.querySelector('.reviews-controls-new');
   var formCloseButton = document.querySelector('.review-form-close');
@@ -15,31 +17,29 @@
   var reviewFieldName = document.querySelector('.review-fields-name');
   var reviewFieldText = document.querySelector('.review-fields-text');
 
+  var cookieUserNameKey = 'code-and-magick-userName';
+  var cookieUserTextKey = 'code-and-magick-userText';
+  var cookieUserScoreKey = 'code-and-magick-userScore';
+
   formNameField.required = true;
 
   checkFields();
 
   formOpenButton.onclick = function(evt) {
+    readReviewCookies();
     evt.preventDefault();
     setVisibility(formContainer, true);
   };
 
   formCloseButton.onclick = function(evt) {
+    writeReviewCookies();
     evt.preventDefault();
     setVisibility(formContainer, false);
   };
 
-  formScoreRadio.onclick = function() {
-    checkFields();
-  };
-
-  formNameField.oninput = function() {
-    checkFields();
-  };
-
-  formTextField.oninput = function() {
-    checkFields();
-  };
+  formScoreRadio.onclick = checkFields;
+  formNameField.oninput = checkFields;
+  formTextField.oninput = checkFields;
 
   function checkFields() {
     var negativeScore = getReviewScore() < 4;
@@ -64,5 +64,43 @@
 
   function getReviewScore() {
     return document.querySelector('input[name=review-mark]:checked').value;
+  }
+
+  function readReviewCookies() {
+    var nameFromCookies = browserCookies.get(cookieUserNameKey);
+    var textFromCookies = browserCookies.get(cookieUserTextKey);
+    var scoreFromCookies = browserCookies.get(cookieUserScoreKey);
+
+    if (nameFromCookies !== null) {
+      formNameField.value = nameFromCookies;
+    }
+    if (textFromCookies !== null) {
+      formTextField.value = textFromCookies;
+    }
+    if (scoreFromCookies !== null) {
+      document.querySelector('#review-mark-' + scoreFromCookies).checked = true;
+    }
+  }
+
+  function writeReviewCookies() {
+    var expiresDaysDelta = '{expires: ' + getDeltaFromBirthday() + '}';
+
+    browserCookies.set(cookieUserNameKey, formNameField.value, expiresDaysDelta);
+    browserCookies.set(cookieUserTextKey, formTextField.value, expiresDaysDelta);
+    browserCookies.set(cookieUserScoreKey, getReviewScore(), expiresDaysDelta);
+  }
+
+  function getDeltaFromBirthday() {
+
+    var oneDayMilliseconds = 24 * 60 * 60 * 1000;
+    var currentDate = new Date();
+    var currentYear = currentDate.getFullYear();
+    var birthday = new Date(currentYear + '-06-04');
+
+    if (currentDate <= birthday) {
+      birthday.setFullYear(currentYear - 1);
+    }
+
+    return Math.round((currentDate.getTime() - birthday.getTime()) / oneDayMilliseconds);
   }
 })();
