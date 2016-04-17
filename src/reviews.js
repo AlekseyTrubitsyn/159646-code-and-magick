@@ -1,15 +1,17 @@
 'use strict';
 
 (function() {
-
   var filterBlock = document.querySelector('.reviews-filter');
   var container = document.querySelector('.reviews-list');
   var template = document.querySelector('#review-template');
+  var showMoreReviews = document.querySelector('.reviews-controls-more');
 
   var REVIEWS_LOAD_URL = '//o0.github.io/assets/json/reviews.json';
   var ACTIVE_FILTER_CLASSNAME = 'reviews-filter-active';
   var REVIEWS_LOAD_TIMEOUT = 10000;
   var reviews = [];
+  var filteredReviews = [];
+
   var Filter = {
     'ALL': 'reviews-all',
     'RECENT': 'reviews-recent',
@@ -29,6 +31,9 @@
 
   var reviewToClone;
 
+  var PAGE_SIZE = 3;
+  var pageNumber = 0;
+
   setVisibility(filterBlock, false);
 
   if ('content' in template) {
@@ -37,6 +42,16 @@
     reviewToClone = template.querySelector('.review');
   }
 
+  showMoreReviews.onclick = function() {
+    pageNumber++;
+    cloneReviews(pageNumber, false);
+  };
+
+  /**
+   * @param {Object} data
+   * @param {HTMLElement} container
+   * @return {HTMLElement}
+   */
   var createElement = function(data) {
     var clonedReview = reviewToClone.cloneNode(true);
     container.appendChild(clonedReview);
@@ -74,6 +89,9 @@
     return clonedReview;
   };
 
+  /**
+  * @param {function(Array.<Object>)} callback
+  */
   var getReviews = function(callback) {
     var xhr = new XMLHttpRequest();
 
@@ -98,15 +116,33 @@
     xhr.send();
   };
 
-  var clonedReviews = function(filteredReviews) {
-    container.innerHTML = '';
-    filteredReviews.forEach(function(review) {
+  /**
+   * @param {Array.<Object>} filteredReviews
+   * @param {number} page
+   * @param {boolean=} replaceReviews
+   */
+  var cloneReviews = function(page, replaceReviews) {
+    if (replaceReviews) {
+      container.innerHTML = '';
+    }
+
+    var pageFrom = page * PAGE_SIZE;
+    var pageTo = pageFrom + PAGE_SIZE;
+
+    setVisibility(showMoreReviews, isNextPageAvailable(filteredReviews, pageNumber, PAGE_SIZE));
+
+    filteredReviews.slice(pageFrom, pageTo).forEach(function(review) {
       createElement(review);
     });
   };
 
+  /**
+  * @param {Filter} filter
+  */
   var setFilterEnabled = function(filter) {
-    clonedReviews(filterReviews(filter));
+    pageNumber = 0;
+    filteredReviews = filterReviews(filter);
+    cloneReviews(pageNumber, true);
 
     var activeFilter = filterBlock.querySelector('.' + ACTIVE_FILTER_CLASSNAME);
     if (activeFilter) {
@@ -119,23 +155,39 @@
     }
   };
 
-  var setFiltersEnabled = function(enabled) {
-    for (var i = 0; i < filterBlock.length; i++) {
-      filterBlock[i].onclick = enabled ? function() {
-        setFilterEnabled(this.id);
-      } : null;
-    }
+  /**
+  * @param {boolean} enabled
+  */
+  var setFiltersEnabled = function() {
+    filterBlock.addEventListener('click', function(evt) {
+      if (evt.target.type === 'radio') { // Внутри блока с фильтрами ловим нажатие на radio button.
+        setFilterEnabled(evt.target.id);
+      }
+    });
   };
 
   getReviews(function(loadedReviews) {
     reviews = loadedReviews;
     setFiltersEnabled(true);
     setFilterEnabled(DEFAULT_FILTER);
-    clonedReviews(reviews);
+    cloneReviews(pageNumber, true);
   });
 
   setVisibility(filterBlock, true);
 
+  /**
+   * @param {Array} reviewList
+   * @param {number} currentPageNumber
+   * @param {number} pageSize
+   * @return {boolean}
+   */
+  var isNextPageAvailable = function(reviewList, currentPageNumber, pageSize) {
+    return (currentPageNumber + 1) < Math.ceil(reviewList.length / pageSize);
+  };
+
+  /**
+   * @param {Filter} filter
+   */
   var filterReviews = function(filter) {
     var reviewsToFilter = reviews.slice(0);
 
@@ -188,6 +240,10 @@
     elem.classList.add('reviews-load-failure');
   }
 
+    /**
+     * @param {HTMLElement} elem
+     * @param {boolean} isVisible
+     */
   function setVisibility(elem, isVisible) {
     if (isVisible) {
       elem.classList.remove('invisible');

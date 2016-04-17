@@ -1,4 +1,3 @@
-/*eslint no-unused-vars: 0*/
 /* exported getMessage(a, b) */
 'use strict';
 
