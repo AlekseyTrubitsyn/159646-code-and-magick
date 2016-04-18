@@ -68,11 +68,14 @@
   window.addEventListener('scroll', function(evt) {
     clearTimeout(scrollTimeout);
     scrollTimeout = setTimeout(function() {
+      if (evt.pageY < CLOUDS_IMAGE_WINDOW_MAX_Y) {
         var deltaPageY = evt.pageY - currentPageY;
         var cloudsCurrentPosX = cloudsPosX();
 
         clouds.style.backgroundPosition = cloudsCurrentPosX - deltaPageY * 0.15 + 'px 0';
       }
+      currentPageY = evt.pageY;
+    }, 100);
   });
 
   /**
