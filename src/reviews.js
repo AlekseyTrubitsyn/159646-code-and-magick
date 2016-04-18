@@ -36,8 +36,10 @@
   var pageNumber = 0;
 
   var CLOUDS_IMAGE_WIDTH = 1024;
+  var CLOUDS_IMAGE_WINDOW_MAX_Y = clouds.clientHeight || 363;
   var currentPageY = window.scrollY;
   var cloudsDefaultPosX = (document.body.clientWidth - CLOUDS_IMAGE_WIDTH) / 2 || 0;
+  var scrollTimeout;
 
   setVisibility(filterBlock, false);
 
@@ -64,11 +66,13 @@
   };
 
   window.addEventListener('scroll', function(evt) {
-    var deltaPageY = evt.pageY - currentPageY;
-    var cloudsCurrentPosX = cloudsPosX();
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(function() {
+        var deltaPageY = evt.pageY - currentPageY;
+        var cloudsCurrentPosX = cloudsPosX();
 
-    clouds.style.backgroundPosition = cloudsCurrentPosX - deltaPageY * 0.15 + 'px 0';
-    currentPageY = evt.pageY;
+        clouds.style.backgroundPosition = cloudsCurrentPosX - deltaPageY * 0.15 + 'px 0';
+      }
   });
 
   /**
