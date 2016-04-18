@@ -1,6 +1,8 @@
 'use strict';
+var browserCookies = require('browser-cookies');
 
 (function() {
+
   var formContainer = document.querySelector('.overlay-container');
   var formOpenButton = document.querySelector('.reviews-controls-new');
   var formCloseButton = document.querySelector('.review-form-close');
@@ -14,8 +16,6 @@
   var reviewFields = document.querySelector('.review-fields');
   var reviewFieldName = document.querySelector('.review-fields-name');
   var reviewFieldText = document.querySelector('.review-fields-text');
-
-  var browserCookies = require('browser-cookies');
 
   var cookieUserNameKey = 'code-and-magick-userName';
   var cookieUserTextKey = 'code-and-magick-userText';
@@ -37,17 +37,9 @@
     setVisibility(formContainer, false);
   };
 
-  formScoreRadio.onclick = function() {
-    checkFields();
-  };
-
-  formNameField.oninput = function() {
-    checkFields();
-  };
-
-  formTextField.oninput = function() {
-    checkFields();
-  };
+  formScoreRadio.onclick = checkFields;
+  formNameField.oninput = checkFields;
+  formTextField.oninput = checkFields;
 
   function checkFields() {
     var negativeScore = getReviewScore() < 4;
@@ -99,11 +91,16 @@
   }
 
   function getDeltaFromBirthday() {
+
     var oneDayMilliseconds = 24 * 60 * 60 * 1000;
     var currentDate = new Date();
     var currentYear = currentDate.getFullYear();
-    var birthdayDate = (currentDate < birthdayDate) ? new Date(currentYear + '-06-04') : new Date(currentYear - 1 + '-06-04');
+    var birthday = new Date(currentYear + '-06-04');
 
-    return Math.round((currentDate.getTime() - birthdayDate.getTime()) / oneDayMilliseconds);
+    if (currentDate <= birthday) {
+      birthday.setFullYear(currentYear - 1);
+    }
+
+    return Math.round((currentDate.getTime() - birthday.getTime()) / oneDayMilliseconds);
   }
 })();
