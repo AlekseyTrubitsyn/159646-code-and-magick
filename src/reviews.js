@@ -5,7 +5,6 @@
   var container = document.querySelector('.reviews-list');
   var template = document.querySelector('#review-template');
   var showMoreReviews = document.querySelector('.reviews-controls-more');
-  var clouds = document.querySelector('.header-clouds');
 
   var REVIEWS_LOAD_URL = '//o0.github.io/assets/json/reviews.json';
   var ACTIVE_FILTER_CLASSNAME = 'reviews-filter-active';
@@ -35,12 +34,6 @@
   var PAGE_SIZE = 3;
   var pageNumber = 0;
 
-  var CLOUDS_IMAGE_WIDTH = 1024;
-  var CLOUDS_IMAGE_WINDOW_MAX_Y = clouds.clientHeight || 363;
-  var currentPageY = window.scrollY;
-  var cloudsDefaultPosX = (document.body.clientWidth - CLOUDS_IMAGE_WIDTH) / 2 || 0;
-  var scrollTimeout;
-
   setVisibility(filterBlock, false);
 
   if ('content' in template) {
@@ -53,30 +46,6 @@
     pageNumber++;
     cloneReviews(pageNumber, false);
   };
-
-  var cloudsPosX = function() {
-    var cloudsCurrentPosX = clouds.style.backgroundPosition;
-
-    if(cloudsCurrentPosX === '') {
-      cloudsCurrentPosX = cloudsDefaultPosX;
-    } else {
-      cloudsCurrentPosX = cloudsCurrentPosX.split(' ')[0].replace('px', '');
-    }
-    return cloudsCurrentPosX;
-  };
-
-  window.addEventListener('scroll', function(evt) {
-    clearTimeout(scrollTimeout);
-    scrollTimeout = setTimeout(function() {
-      if (evt.pageY < CLOUDS_IMAGE_WINDOW_MAX_Y) {
-        var deltaPageY = evt.pageY - currentPageY;
-        var cloudsCurrentPosX = cloudsPosX();
-
-        clouds.style.backgroundPosition = cloudsCurrentPosX - deltaPageY * 0.15 + 'px 0';
-      }
-      currentPageY = evt.pageY;
-    }, 100);
-  });
 
   /**
    * @param {Object} data

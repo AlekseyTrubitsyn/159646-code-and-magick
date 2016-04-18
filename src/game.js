@@ -881,4 +881,43 @@
   var game = new Game(document.querySelector('.demo'));
   game.initializeLevelAndStart();
   game.setGameStatus(window.Game.Verdict.INTRO);
+
+  // Параллакс
+  var clouds = document.querySelector('.header-clouds');
+  var demo = document.querySelector('.demo');
+
+  var CLOUDS_IMAGE_WIDTH = 1024;
+  var CLOUDS_IMAGE_BLOCK_MAX_Y = clouds.getBoundingClientRect().bottom;
+  var currentPageY = window.scrollY;
+  var cloudsDefaultPosX = (document.body.clientWidth - CLOUDS_IMAGE_WIDTH) / 2 || 0;
+  var scrollTimeout;
+
+  var GAME_BLOCK_MAX_Y = demo.getBoundingClientRect().bottom;
+  var PARALLAX_TIMEOUT = 100;
+
+  var cloudsPosX = function() {
+    var cloudsCurrentPosX = clouds.style.backgroundPosition;
+
+    if(cloudsCurrentPosX === '') {
+      cloudsCurrentPosX = cloudsDefaultPosX;
+    } else {
+      cloudsCurrentPosX = cloudsCurrentPosX.split(' ')[0].replace('px', '');
+    }
+    return cloudsCurrentPosX;
+  };
+
+  window.addEventListener('scroll', function(evt) {
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(function() {
+      if (evt.pageY < CLOUDS_IMAGE_BLOCK_MAX_Y) {
+        var deltaPageY = evt.pageY - currentPageY;
+        var cloudsCurrentPosX = cloudsPosX();
+
+        clouds.style.backgroundPosition = cloudsCurrentPosX - deltaPageY * 0.15 + 'px 0';
+        currentPageY = evt.pageY;
+      } else if (evt.pageY > GAME_BLOCK_MAX_Y) {
+        game.setGameStatus(Game.Verdict.PAUSE);
+      }
+    }, PARALLAX_TIMEOUT);
+  });
 })();
