@@ -5,6 +5,7 @@
   var container = document.querySelector('.reviews-list');
   var template = document.querySelector('#review-template');
   var showMoreReviews = document.querySelector('.reviews-controls-more');
+  var clouds = document.querySelector('.header-clouds');
 
   var REVIEWS_LOAD_URL = '//o0.github.io/assets/json/reviews.json';
   var ACTIVE_FILTER_CLASSNAME = 'reviews-filter-active';
@@ -34,6 +35,10 @@
   var PAGE_SIZE = 3;
   var pageNumber = 0;
 
+  var CLOUDS_IMAGE_WIDTH = 1024;
+  var currentPageY = window.scrollY;
+  var cloudsDefaultPosX = (document.body.clientWidth - CLOUDS_IMAGE_WIDTH) / 2 || 0;
+
   setVisibility(filterBlock, false);
 
   if ('content' in template) {
@@ -46,6 +51,25 @@
     pageNumber++;
     cloneReviews(pageNumber, false);
   };
+
+  var cloudsPosX = function() {
+    var cloudsCurrentPosX = clouds.style.backgroundPosition;
+
+    if(cloudsCurrentPosX === '') {
+      cloudsCurrentPosX = cloudsDefaultPosX;
+    } else {
+      cloudsCurrentPosX = cloudsCurrentPosX.split(' ')[0].replace('px', '');
+    }
+    return cloudsCurrentPosX;
+  };
+
+  window.addEventListener('scroll', function(evt) {
+    var deltaPageY = evt.pageY - currentPageY;
+    var cloudsCurrentPosX = cloudsPosX();
+
+    clouds.style.backgroundPosition = cloudsCurrentPosX - deltaPageY * 0.15 + 'px 0';
+    currentPageY = evt.pageY;
+  });
 
   /**
    * @param {Object} data
@@ -160,7 +184,7 @@
   */
   var setFiltersEnabled = function() {
     filterBlock.addEventListener('click', function(evt) {
-      if (evt.target.type === 'radio') { // Внутри блока с фильтрами ловим нажатие на radio button.
+      if (evt.target.type === 'radio') {
         setFilterEnabled(evt.target.id);
       }
     });
