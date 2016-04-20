@@ -888,7 +888,6 @@
 
   clouds.style.backgroundPosition = 0;
 
-  // var scrollTimeout;
   var waitSomeSec = false;
   var PARALLAX_TIMEOUT = 100;
 
@@ -897,7 +896,6 @@
   };
 
   window.addEventListener('scroll', function() {
-    // clearTimeout(scrollTimeout); // Надо его в таком случае удалять?
 
     if(!waitSomeSec) {
       waitSomeSec = true;
@@ -908,7 +906,6 @@
       } else if (isElementVisible(clouds)) {
         clouds.style.backgroundPosition = clouds.getBoundingClientRect().top + 'px 0';
       }
-      // scrollTimeout = setTimeout(function() {
       setTimeout(function() {
         waitSomeSec = false;
       }, PARALLAX_TIMEOUT);
