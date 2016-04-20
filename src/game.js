@@ -886,36 +886,32 @@
   var clouds = document.querySelector('.header-clouds');
   var demo = document.querySelector('.demo');
 
-  var CLOUDS_IMAGE_WIDTH = 1024;
-  var currentPageY = window.scrollY;
-  var cloudsDefaultPosX = (document.body.clientWidth - CLOUDS_IMAGE_WIDTH) / 2 || 0;
-  var scrollTimeout;
+  clouds.style.backgroundPosition = 0;
 
+  // var scrollTimeout;
+  var waitSomeSec = false;
   var PARALLAX_TIMEOUT = 100;
 
-  var cloudsPosX = function() {
-    var cloudsCurrentPosX = clouds.style.backgroundPosition;
-
-    if(cloudsCurrentPosX === '') {
-      cloudsCurrentPosX = cloudsDefaultPosX;
-    } else {
-      cloudsCurrentPosX = cloudsCurrentPosX.split(' ')[0].replace('px', '');
-    }
-    return cloudsCurrentPosX;
+  var isElementVisible = function(elem) {
+    return elem.getBoundingClientRect().bottom >= 0;
   };
 
-  window.addEventListener('scroll', function(evt) {
-    clearTimeout(scrollTimeout);
-    scrollTimeout = setTimeout(function() {
-      if (clouds.getBoundingClientRect().bottom >= 0) {
-        var deltaPageY = evt.pageY - currentPageY;
-        var cloudsCurrentPosX = cloudsPosX();
+  window.addEventListener('scroll', function() {
+    // clearTimeout(scrollTimeout); // Надо его в таком случае удалять?
 
-        clouds.style.backgroundPosition = cloudsCurrentPosX - deltaPageY * 0.15 + 'px 0';
-        currentPageY = evt.pageY;
-      } else if (demo.getBoundingClientRect().bottom < 0) {
+    if(!waitSomeSec) {
+      waitSomeSec = true;
+
+      if (!isElementVisible(demo)) {
         game.setGameStatus(Game.Verdict.PAUSE);
+
+      } else if (isElementVisible(clouds)) {
+        clouds.style.backgroundPosition = clouds.getBoundingClientRect().top + 'px 0';
       }
-    }, PARALLAX_TIMEOUT);
+      // scrollTimeout = setTimeout(function() {
+      setTimeout(function() {
+        waitSomeSec = false;
+      }, PARALLAX_TIMEOUT);
+    }
   });
 })();
