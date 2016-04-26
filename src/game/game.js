@@ -885,14 +885,12 @@
   game.initializeLevelAndStart();
   game.setGameStatus(window.Game.Verdict.INTRO);
 
-  // Параллакс
-  var clouds = document.querySelector('.header-clouds');
   var demo = document.querySelector('.demo');
+  var parallax = require('./parallax');
 
-  clouds.style.backgroundPosition = 0;
+  parallax.slideClouds();
 
   var waitSomeSec = false;
-  var PARALLAX_TIMEOUT = 100;
 
   window.addEventListener('scroll', function() {
 
@@ -901,13 +899,7 @@
 
       if (!utilities.isElementVisible(demo)) {
         game.setGameStatus(Game.Verdict.PAUSE);
-
-      } else if (utilities.isElementVisible(clouds)) {
-        clouds.style.backgroundPosition = clouds.getBoundingClientRect().top + 'px 0';
       }
-      setTimeout(function() {
-        waitSomeSec = false;
-      }, PARALLAX_TIMEOUT);
     }
   });
 })();
