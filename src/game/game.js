@@ -1,6 +1,9 @@
 'use strict';
 
 (function() {
+
+  var utilities = require('../utilities');
+
   /**
    * @const
    * @type {number}
@@ -891,19 +894,15 @@
   var waitSomeSec = false;
   var PARALLAX_TIMEOUT = 100;
 
-  var isElementVisible = function(elem) {
-    return elem.getBoundingClientRect().bottom >= 0;
-  };
-
   window.addEventListener('scroll', function() {
 
     if(!waitSomeSec) {
       waitSomeSec = true;
 
-      if (!isElementVisible(demo)) {
+      if (!utilities.isElementVisible(demo)) {
         game.setGameStatus(Game.Verdict.PAUSE);
 
-      } else if (isElementVisible(clouds)) {
+      } else if (utilities.isElementVisible(clouds)) {
         clouds.style.backgroundPosition = clouds.getBoundingClientRect().top + 'px 0';
       }
       setTimeout(function() {

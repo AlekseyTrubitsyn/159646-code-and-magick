@@ -1,14 +1,15 @@
 'use strict';
 
 (function() {
+  var utilities = require('../utilities');
+
   var filterBlock = document.querySelector('.reviews-filter');
   var container = document.querySelector('.reviews-list');
   var template = document.querySelector('#review-template');
-  var showMoreReviews = document.querySelector('.reviews-controls-more');
+  var showMoreReviewsButton = document.querySelector('.reviews-controls-more');
 
   var REVIEWS_LOAD_URL = '//o0.github.io/assets/json/reviews.json';
   var ACTIVE_FILTER_CLASSNAME = 'reviews-filter-active';
-  var REVIEWS_LOAD_TIMEOUT = 10000;
   var reviews = [];
   var filteredReviews = [];
 
@@ -21,7 +22,6 @@
   };
   var DEFAULT_FILTER = Filter.ALL;
 
-  var IMAGE_LOAD_TIMEOUT = 10000;
   var RATING_STAR_IMAGE_WIDTH = 30;
   var AUTHOR_IMAGE_WIDTH = 124;
   var AUTHOR_IMAGE_HEIGH = 124;
@@ -34,7 +34,7 @@
   var PAGE_SIZE = 3;
   var pageNumber = 0;
 
-  setVisibility(filterBlock, false);
+  utilities.setVisibility(filterBlock, false);
 
   if ('content' in template) {
     reviewToClone = template.content.querySelector('.review');
@@ -42,9 +42,13 @@
     reviewToClone = template.querySelector('.review');
   }
 
-  showMoreReviews.onclick = function() {
-    pageNumber++;
-    cloneReviews(pageNumber, false);
+  var showMoreReviews = function() {
+    utilities.setVisibility(showMoreReviewsButton, isNextPageAvailable(filteredReviews, pageNumber, PAGE_SIZE));
+
+    showMoreReviewsButton.addEventListener('click', function() {
+      pageNumber++;
+      cloneReviews(pageNumber, false);
+    });
   };
 
   /**
@@ -62,58 +66,20 @@
       clonedReview.querySelector('.review-rating').style.width = RATING_STAR_IMAGE_WIDTH * data.rating + 'px';
     }
 
-    var reviewAuthorImage = new Image();
-    var reviewAuthorImageTimeout;
+    utilities.downloadImage(data.author.picture, function(error) {
+      if (error) {
+        addLoadFailureClass(clonedReview);
+      } else {
+        var reviewAuthor = clonedReview.querySelector('.review-author');
 
-    var reviewAuthor = clonedReview.querySelector('.review-author');
-    reviewAuthor.title = data.author.name;
-    reviewAuthor.width = AUTHOR_IMAGE_WIDTH;
-    reviewAuthor.height = AUTHOR_IMAGE_HEIGH;
-
-    reviewAuthorImage.onload = function(e) {
-      clearTimeout(reviewAuthorImageTimeout);
-      reviewAuthor.src = e.target.src;
-    };
-
-    reviewAuthorImage.onerror = function() {
-      addLoadFailureClass(clonedReview);
-    };
-
-    reviewAuthorImageTimeout = setTimeout(function() {
-      reviewAuthorImage.src = '';
-      addLoadFailureClass(clonedReview);
-    }, IMAGE_LOAD_TIMEOUT);
-
-    reviewAuthorImage.src = data.author.picture;
+        reviewAuthor.title = data.author.name;
+        reviewAuthor.width = AUTHOR_IMAGE_WIDTH;
+        reviewAuthor.height = AUTHOR_IMAGE_HEIGH;
+        reviewAuthor.src = data.author.picture;
+      }
+    });
 
     return clonedReview;
-  };
-
-  /**
-  * @param {function(Array.<Object>)} callback
-  */
-  var getReviews = function(callback) {
-    var xhr = new XMLHttpRequest();
-
-    xhr.onerror = function() {
-      addXhrErrorClass(container);
-    };
-
-    xhr.timeout = REVIEWS_LOAD_TIMEOUT;
-    xhr.ontimeout = xhr.onerror;
-
-    xhr.onloadstart = function() {
-      addXhrListLoadingClass(container);
-    };
-
-    xhr.onload = function(e) {
-      removeXhrListLoadingClass(container);
-      var loadedData = JSON.parse(e.target.response);
-      callback(loadedData);
-    };
-
-    xhr.open('GET', REVIEWS_LOAD_URL);
-    xhr.send();
   };
 
   /**
@@ -129,7 +95,7 @@
     var pageFrom = page * PAGE_SIZE;
     var pageTo = pageFrom + PAGE_SIZE;
 
-    setVisibility(showMoreReviews, isNextPageAvailable(filteredReviews, pageNumber, PAGE_SIZE));
+    utilities.setVisibility(showMoreReviewsButton, isNextPageAvailable(filteredReviews, pageNumber, PAGE_SIZE));
 
     filteredReviews.slice(pageFrom, pageTo).forEach(function(review) {
       createElement(review);
@@ -155,25 +121,29 @@
     }
   };
 
-  /**
-  * @param {boolean} enabled
-  */
-  var setFiltersEnabled = function() {
-    filterBlock.addEventListener('click', function(evt) {
-      if (evt.target.type === 'radio') {
-        setFilterEnabled(evt.target.id);
-      }
-    });
-  };
+  function reviewCallback(error, loadedReviews) {
+    removeXhrListLoadingClass(container);
 
-  getReviews(function(loadedReviews) {
-    reviews = loadedReviews;
-    setFiltersEnabled(true);
-    setFilterEnabled(DEFAULT_FILTER);
-    cloneReviews(pageNumber, true);
-  });
+    if (error) {
+      addXhrErrorClass(container);
+    } else {
+      reviews = loadedReviews;
 
-  setVisibility(filterBlock, true);
+      filterBlock.addEventListener('click', function(evt) {
+        if (evt.target.type === 'radio') {
+          setFilterEnabled(evt.target.id);
+        }
+      });
+
+      setFilterEnabled(DEFAULT_FILTER);
+      showMoreReviews();
+    }
+  }
+
+  addXhrListLoadingClass(container);
+  utilities.getXHR(reviewCallback, REVIEWS_LOAD_URL);
+
+  utilities.setVisibility(filterBlock, true);
 
   /**
    * @param {Array} reviewList
@@ -183,6 +153,7 @@
    */
   var isNextPageAvailable = function(reviewList, currentPageNumber, pageSize) {
     return (currentPageNumber + 1) < Math.ceil(reviewList.length / pageSize);
+    // return currentPageNumber < Math.ceil(reviewList.length / pageSize);
   };
 
   /**
@@ -240,15 +211,4 @@
     elem.classList.add('reviews-load-failure');
   }
 
-    /**
-     * @param {HTMLElement} elem
-     * @param {boolean} isVisible
-     */
-  function setVisibility(elem, isVisible) {
-    if (isVisible) {
-      elem.classList.remove('invisible');
-    } else {
-      elem.classList.add('invisible');
-    }
-  }
 })();

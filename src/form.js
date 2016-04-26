@@ -2,6 +2,7 @@
 var browserCookies = require('browser-cookies');
 
 (function() {
+  var utilities = require('./utilities.js');
 
   var formContainer = document.querySelector('.overlay-container');
   var formOpenButton = document.querySelector('.reviews-controls-new');
@@ -28,13 +29,13 @@ var browserCookies = require('browser-cookies');
   formOpenButton.onclick = function(evt) {
     readReviewCookies();
     evt.preventDefault();
-    setVisibility(formContainer, true);
+    utilities.setVisibility(formContainer, true);
   };
 
   formCloseButton.onclick = function(evt) {
     writeReviewCookies();
     evt.preventDefault();
-    setVisibility(formContainer, false);
+    utilities.setVisibility(formContainer, false);
   };
 
   formScoreRadio.onclick = checkFields;
@@ -49,17 +50,9 @@ var browserCookies = require('browser-cookies');
 
     formTextField.required = negativeScore;
     formSubmitButton.disabled = anyFieldWrong;
-    setVisibility(reviewFields, anyFieldWrong);
-    setVisibility(reviewFieldName, nameFieldWrong);
-    setVisibility(reviewFieldText, textFieldWrong);
-  }
-
-  function setVisibility(elem, isVisible) {
-    if (isVisible) {
-      elem.classList.remove('invisible');
-    } else {
-      elem.classList.add('invisible');
-    }
+    utilities.setVisibility(reviewFields, anyFieldWrong);
+    utilities.setVisibility(reviewFieldName, nameFieldWrong);
+    utilities.setVisibility(reviewFieldText, textFieldWrong);
   }
 
   function getReviewScore() {

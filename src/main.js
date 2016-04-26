@@ -1,7 +1,5 @@
 'use strict';
 
-// require('./check.js');
-// require('./game-stat.min.js');
-require('./form.js');
-require('./game.js');
-require('./reviews.js');
+require('./form');
+require('./game/game');
+require('./reviews/reviews');
